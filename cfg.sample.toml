@@ -20,6 +20,11 @@ app_client_secret = ""
 #ssh_key = """
 #"""
 
+# If you're using local git, you may want to set up a ssh-config
+# file specific to github.com, primarily to ensure the host key
+# is configured.
+# ssh_config_path = ""
+
 # By default, Homu extracts the name+email from the Github account.  However,
 # you may want to use a private email for the account, and associate the commits
 # with a public email address.
