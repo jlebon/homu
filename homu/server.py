@@ -742,7 +742,7 @@ def start(cfg, states, queue_handler, repo_cfgs, repos, logger, buildbot_slots, 
         Thread(target=synch_all).start()
 
     try:
-        run(host=cfg['web'].get('host', ''), port=cfg['web']['port'], server='waitress')
+        run(host=cfg['web'].get('host', '*'), port=cfg['web']['port'], server='waitress')
     except OSError as e:
         print(e, file=sys.stderr)
         os._exit(1)
