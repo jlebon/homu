@@ -233,15 +233,28 @@ def github():
 
     owner_info = info['repository']['owner']
     owner = owner_info.get('login') or owner_info['name']
-    repo_label = g.repo_labels[owner, info['repository']['name']]
+    repo_name = info['repository']['name']
+    repo_label = g.repo_labels[owner, repo_name]
     repo_cfg = g.repo_cfgs[repo_label]
 
+    # This HMAC authenticates that github knows our secret
     hmac_method, hmac_sig = request.headers['X-Hub-Signature'].split('=')
-    if hmac_sig != hmac.new(
-        repo_cfg['github']['secret'].encode('utf-8'),
-        payload,
-        hmac_method,
-    ).hexdigest():
+    # Originally, we only supported a per-repo secret
+    repo_secret = repo_cfg.get('github', {}).get('secret')
+    if repo_secret is None:
+        # But here we support automatically deriving a per-repo secret from a
+        # global secret, without having repo owners be able to compute the
+        # secret for a different repo. See the comment in cfg.sample.toml for
+        # more information.
+        base_secret = g.cfg['github'].get('base_secret')
+        if base_secret is None:
+            abort(500, "Repository {} has no secret specified, and no base_secret".format(repo_label))
+        repo_secret = hmac.new(base_secret.encode('utf-8'),
+                               "{}.{}".format(owner, repo_name).encode('utf-8'),
+                               'sha1').hexdigest()
+    computed_hmac = hmac.new(repo_secret.encode('utf-8'), payload, hmac_method).hexdigest()
+
+    if hmac_sig != computed_hmac:
         abort(400, 'Invalid signature')
 
     event_type = request.headers['X-Github-Event']

@@ -10,6 +10,23 @@ access_token = ""
 app_client_id = ""
 app_client_secret = ""
 
+# A base shared secret; this can be used to generate the per-repo github secret,
+# which is what's used to verify authenticity of github -> Homu webhooks. The
+# per-repo secret can be computed as follows (you'll need to enter this in
+# the repo webhook configuration):
+#
+# $ echo -n "$owner.$name" | openssl sha1 -hmac "$secret"
+# 
+# Note this is new; Homu started with a per-repository `repo.github.secret`
+# value, which if specified, overrides this. Hence, you can incrementally
+# transition repositories.
+#
+# You can generate this value with $(openssl rand -hex 20) as per the final
+# secret, but it could also be anything you like.
+#
+# base_secret = "<replace with secret>"
+
+
 [git]
 
 # Use the local Git command. Required to use some advanced features. It also
